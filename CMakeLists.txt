@@ -28,6 +28,7 @@ add_executable(${PROJECT_NAME}
         LoRaWAN.c
         ring_buffer.c
         rotator.c
+        header.h
 )
 
 # Create map/bin/hex/uf2 files
