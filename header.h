@@ -22,4 +22,5 @@
 #define RX_PIN 5
 #define TX_PIN 4
 #define BAUD_RATE 9600
+#define KUKKUU 696969
 #endif //JVD_PROJECT_HEADER_H
