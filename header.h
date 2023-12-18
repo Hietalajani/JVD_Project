@@ -13,6 +13,7 @@
 #include "rotator.c"
 #include "ring_buffer.c"
 
+
 // define pins
 #define LED_PIN 21
 #define BUTTON_PIN 12
@@ -21,5 +22,6 @@
 #define RX_PIN 5
 #define TX_PIN 4
 #define BAUD_RATE 9600
+#define LOLOLOLOLO 696969
 
 #endif //JVD_PROJECT_HEADER_H
