@@ -11,6 +11,15 @@
 #include "LED.c"
 #include "LoRaWAN.c"
 #include "rotator.c"
+#include "ring_buffer.c"
 
+// define pins
+#define LED_PIN 21
+#define BUTTON_PIN 12
+#define STR_LEN 256
+#define UART_NR 1
+#define RX_PIN 5
+#define TX_PIN 4
+#define BAUD_RATE 9600
 
 #endif //JVD_PROJECT_HEADER_H
