@@ -1,3 +1,5 @@
+#include "header.h"
+
 /*
  * Setup all GPIOs here
  * Button
@@ -7,3 +9,64 @@
  * Piezo
 */
 
+// globals
+volatile uint32_t time = 0;
+volatile bool state = false;
+
+pwm_config pwm_get_config_struct() {
+    const uint32_t f_pwm = PWM_FREQUENCY;
+
+    uint32_t sys_clock = clock_get_hz(clk_sys);
+    uint32_t divider = sys_clock / MHZ_1;
+    uint32_t top = MHZ_1 / f_pwm - 1;
+
+    pwm_config config = {
+            sys_clock,
+            divider,
+            top
+    };
+
+    return config;
+}
+
+void handler(uint gpio, uint32_t eventmask) {
+    uint32_t newtime = time_us_32() / 1000;
+//    printf("TIME: %d\nMASK: %s\n", newtime-time, eventmask);
+    if(eventmask == GPIO_IRQ_EDGE_FALL) {
+        if ((newtime - time) > DEBOUNCE_TIME && !state) {
+            toggle_leds(LED_PIN, 500);
+            state = true;
+        } else {
+            state = false;
+        }
+        time = newtime;
+    }
+}
+
+void initialize_gpios(const char *type, int nr, ...) {
+    va_list args;
+
+    va_start(args, nr);
+    for(int i = 0; i < nr; i++) {
+        uint arg = va_arg(args, uint);
+        gpio_init(arg);
+        // buttons
+        if (strcmp(type, "BTN") == 0) {
+            gpio_pull_up(arg);
+            gpio_set_dir(arg, 0);
+            gpio_set_irq_enabled_with_callback(arg, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &handler);
+        }
+        // leds
+        else if (strcmp(type, "LED") == 0){
+            gpio_set_dir(arg, 1);
+            gpio_set_function(arg, GPIO_FUNC_PWM);
+            uint slice_num = pwm_gpio_to_slice_num(arg);
+            pwm_config config = pwm_get_config_struct();
+            pwm_init(slice_num, &config, true);
+        }
+        else {
+            //insert insult_user() here
+        }
+    }
+    va_end(args);
+}
