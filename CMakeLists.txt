@@ -22,13 +22,14 @@ add_compile_options(-Wall
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME}
         main.c
+        header.h
         EEPROM.c
         gpio_init_file.c
         LED.c
         LoRaWAN.c
         ring_buffer.c
+        ring_buffer.h
         rotator.c
-        header.h
 )
 
 # Create map/bin/hex/uf2 files
