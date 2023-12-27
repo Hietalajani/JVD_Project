@@ -46,5 +46,4 @@ void handler(uint gpio, uint32_t eventmask);
 pwm_config pwm_get_config_struct();
 void toggle_leds(uint16_t gpio, uint16_t level);
 
-
 #endif //JVD_PROJECT_HEADER_H
