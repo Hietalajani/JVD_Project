@@ -4,7 +4,7 @@
 
 #ifndef JVD_PROJECT_ROTATOR_H
 #define JVD_PROJECT_ROTATOR_H
-
+#include "time.h"
 // define other stuff
 #define TURN_DIVIDER_TIMER_MS 5000
 // define pins

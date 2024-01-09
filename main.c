@@ -19,6 +19,8 @@ int main(void) {
                     while (!gpio_get(BUTTON_PIN)) {
                         sleep_ms(50);
                     }
+                    variable_reset();
+                    position_calib();
                     printf("case 0\n");
                     program_state = 1;
                 }
@@ -29,7 +31,6 @@ int main(void) {
                 program_state = 2;
                 break;
             case (2):
-                printf("Press button, case 2\n");
                 if (!gpio_get(BUTTON_PIN)) {
                     while (!gpio_get(BUTTON_PIN)) {
                         sleep_ms(50);
@@ -40,17 +41,17 @@ int main(void) {
             case (3): {
                 printf("case 3\n");
                 if (turns_done < 7) {
-                    for (int i=0;i<7; i++) {
-                        turns_done++;
-                        turn_divider();
-                        sleep_ms(TURN_DIVIDER_TIMER_MS);
-                    }
+                    turns_done++;
+                    turn_divider();
+                    sleep_ms(TURN_DIVIDER_TIMER_MS);
                 }
                 else {
                     printf("Full revolution done, all pills dispensed.\n");
+                    stop_ABCD();
                     program_state = 0;
                 }
             }
+            break;
             case (4):
                 printf("case 4\n");
                 stop_ABCD();

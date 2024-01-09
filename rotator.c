@@ -3,6 +3,9 @@
 
 // Globals.
 
+// Time variables
+volatile uint start,end,timer;
+
 // state of case we are going at in main.
 volatile int program_state = 0;
 // how many slots used from expenser/how many times turned.
@@ -26,6 +29,7 @@ volatile int current_steps_taken = 0;
 
 // Pills dropped?
 volatile bool pill_drop = false;
+volatile int piezo_error_handle = 0;
 
 void init_rotor() {
 
@@ -54,9 +58,10 @@ void init_rotor() {
     // Initialize piezo pin as s an input with pull-up.
     gpio_pull_up(PIEZO_PIN);
     gpio_set_input_enabled(PIEZO_PIN, true);
-
+    stdio_init_all();
     //needs to be configured or set in main func. Doesnt find callback like this.
     //gpio_set_irq_enabled_with_callback(OPTO_PIN,GPIO_IRQ_EDGE_FALL, true, &colib_steps_callback);
+
 
 }
 
@@ -257,15 +262,21 @@ void turn_counterclock(){
     }
 }
 
-//Falling edge callback for calibration.
-void colib_steps_callback(){
-    if(opto_state==1) {
-        revolutions++;
-        printf("%d rising edge\n", revolutions);
-    }
-    if(opto_state==0){
-        printf("Starting calibration/ counting steps.\n");
-        opto_state = 1;
+//Falling edge callback for calibration
+void colib_steps_callback() {
+    if (calibration_on) {
+        end = clock();
+        timer = (end - start)/CLOCKS_PER_SEC;
+        printf("%d\n", timer);
+        if (opto_state == 1 && timer>5) {
+            revolutions++;
+            printf("%d rising edge\n", revolutions);
+        }
+        if (opto_state == 0) {
+            printf("Starting calibration/ counting steps.\n");
+            opto_state = 1;
+        }
+        start = clock();
     }
 }
 
@@ -279,7 +290,9 @@ void calibration_callback(){
 }
 
 void piezo_callback(){
-    if (program_state==3) {
+    printf("Piezo callback\n");
+    piezo_error_handle++;
+    if (program_state==3 && piezo_error_handle>3) {
         pill_drop = true;
     }
 }
@@ -288,15 +301,23 @@ void rotor_startup(){
     init_rotor();
     position_calib();
     stop_ABCD();
+}
+
+void variable_reset(){
+    turns_done = 0;
+    opto_state = 0;
+    revolutions = 0;
+    steps = 0;
+    steps_colib = 0;
+    rising_edge = false;
+    current_steps_taken = 0;
     gpio_set_irq_enabled_with_callback(OPTO_PIN,GPIO_IRQ_EDGE_FALL, true, &colib_steps_callback);
 }
 
 void calibration(){
     // Calibration
-
     //Calibrating steps for full rotate. (3xfull rotation/3)
     calibration_on = true;
-    steps = 0;
 
     // runs until finds falling edge
     do {
@@ -335,21 +356,30 @@ void calibration(){
 
 void turn_divider(){
     //turn 1/8 full steps
-    //gpio_set_irq_enabled_with_callback(PIEZO_PIN,GPIO_IRQ_EDGE_FALL, true, &piezo_callback);
+    gpio_set_irq_enabled_with_callback(PIEZO_PIN,GPIO_IRQ_EDGE_FALL, true, &piezo_callback);
     for(int i=0;i<=steps/8;i++){
         turn_counterclock();
         current_steps_taken++;
     }
     stop_ABCD();
-    /*if(pill_drop==false){
+    if(!pill_drop){
+        for(int i=0;i<5;i++){
+            toggle_leds(LED_PIN, PWM_FREQUENCY);
+            sleep_ms(50);
+            toggle_leds(LED_PIN, PWM_FREQUENCY);
+        }
         printf("No pill drop.\n");
+        printf("Currents steps: %d\n", current_steps_taken);
+        printf("Turns done: %d\n", turns_done);
         //add here blink led 5 times.
     }
     else {
-        printf("Turn done.\n");
-        printf("Currents steps: %d\n");
+        printf("Pill dispensed.\n");
+        printf("Currents steps: %d\n", current_steps_taken);
+        printf("Turns done: %d\n", turns_done);
         pill_drop = false;
-    }*/
+    }
+    piezo_error_handle = 0;
 }
 
 
