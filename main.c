@@ -9,6 +9,7 @@ int main(void) {
 
     // rotor initialize + positioning!!
     rotor_startup();
+    stdio_init_all();
 
     printf("Program starts\n");
 

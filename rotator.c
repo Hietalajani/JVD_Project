@@ -4,7 +4,7 @@
 // Globals.
 
 // Time variables
-volatile uint start,end,timer;
+volatile uint start,start2,end,end2,timer;
 
 // state of case we are going at in main.
 volatile int program_state = 0;
@@ -58,7 +58,6 @@ void init_rotor() {
     // Initialize piezo pin as s an input with pull-up.
     gpio_pull_up(PIEZO_PIN);
     gpio_set_input_enabled(PIEZO_PIN, true);
-    stdio_init_all();
     //needs to be configured or set in main func. Doesnt find callback like this.
     //gpio_set_irq_enabled_with_callback(OPTO_PIN,GPIO_IRQ_EDGE_FALL, true, &colib_steps_callback);
 
@@ -283,7 +282,7 @@ void colib_steps_callback() {
 //Rising edge callback for calibration.
 void calibration_callback(){
     if(calibration_on==true){
-        printf("Calibration rising edge callback\n");
+        printf("Calibration rising edge callback, Timer: %d\n", timer);
         rising_edge = true;
         gpio_set_irq_enabled_with_callback(OPTO_PIN,GPIO_IRQ_EDGE_FALL, true, &colib_steps_callback);
     }
@@ -292,8 +291,11 @@ void calibration_callback(){
 void piezo_callback(){
     printf("Piezo callback\n");
     piezo_error_handle++;
-    if (program_state==3 && piezo_error_handle>3) {
-        pill_drop = true;
+    if (program_state==3) {
+        piezo_error_handle++;
+        if(piezo_error_handle>3) {
+            pill_drop = true;
+        }
     }
 }
 
@@ -327,15 +329,16 @@ void calibration(){
     do {
         turn_clock();
         steps++;
-    }while(revolutions!=1);
+    }while(revolutions!=CALIBRATION_REVOS);
     steps = steps/revolutions;
 
     printf("Steps: %d\n", steps);
     stop_ABCD();
     sleep_ms(50);
 
-    //Correcting the positioning of the holes.
+    //Correcting the positioning of the holes...
     gpio_set_irq_enabled_with_callback(OPTO_PIN,GPIO_IRQ_EDGE_RISE, true, &calibration_callback);
+
     do {
         turn_clock();
         steps_colib++;
@@ -344,7 +347,8 @@ void calibration(){
     stop_ABCD();
     sleep_ms(50);
 
-    steps_colib = steps_colib*2/3;
+    printf("Calibration for hole: %d\n", steps_colib);
+    steps_colib = steps_colib/2;
     for(int i=0;i<=steps_colib;i++){
         turn_counterclock();
     }
