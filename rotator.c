@@ -8,7 +8,7 @@ volatile uint start,start2,end,end2,timer;
 
 // state of case we are going at in main.
 volatile int program_state = 0;
-// how many slots used from expenser/how many times turned.
+// how many slots used from dispenser/how many times turned.
 volatile int turns_done = 0;
 
 // state of which coils are currently in use.
@@ -28,7 +28,7 @@ volatile bool rising_edge = false;
 volatile int current_steps_taken = 0;
 
 // Pills dropped?
-volatile bool pill_drop = false;
+bool pill_drop = false;
 volatile int piezo_error_handle = 0;
 
 void init_rotor() {
@@ -290,7 +290,6 @@ void calibration_callback(){
 
 void piezo_callback(){
     printf("Piezo callback\n");
-    piezo_error_handle++;
     if (program_state==3) {
         piezo_error_handle++;
         if(piezo_error_handle>3) {
@@ -367,10 +366,9 @@ void turn_divider(){
     }
     stop_ABCD();
     if(!pill_drop){
-        for(int i=0;i<5;i++){
+        for(int i=0;i<10;i++){
             toggle_leds(LED_PIN, PWM_FREQUENCY);
-            sleep_ms(50);
-            toggle_leds(LED_PIN, PWM_FREQUENCY);
+            sleep_ms(200);
         }
         printf("No pill drop.\n");
         printf("Currents steps: %d\n", current_steps_taken);

@@ -24,7 +24,6 @@ add_executable(${PROJECT_NAME}
         main.c
             header.h
             rotator.h
-            EEPROM.c
             gpio_init_file.c
             LED.c
             LoRaWAN.c
@@ -39,6 +38,7 @@ pico_add_extra_outputs(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}
         pico_stdlib
         hardware_gpio hardware_pwm
+        hardware_i2c
 )
 
 # Enable usb output, disable uart output
