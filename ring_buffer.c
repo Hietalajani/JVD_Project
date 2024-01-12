@@ -18,7 +18,7 @@ bool rb_full(ring_buffer *rb) {
 }
 
 int rb_read(ring_buffer *rb) {
-    int output = rb->buffer[rb->tail];
+    uint8_t output = rb->buffer[rb->tail];
     if (rb->head != rb->tail) rb->tail = (rb->tail + 1) % rb->size;
     return output;
 }
