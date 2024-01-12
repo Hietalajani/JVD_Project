@@ -1,5 +1,3 @@
-
-
 #include "ring_buffer.h"
 #include "uart.h"
 

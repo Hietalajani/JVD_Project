@@ -1,13 +1,4 @@
-#include "header.h"
-
-/*
- * Setup all GPIOs here
- * Button
- * LED + PWM
- * UART TX & RX
- * EEPROM (I2C)
- * Piezo
-*/
+#include "gpio_init.h"
 
 // globals
 volatile uint32_t time = 0;
@@ -43,29 +34,32 @@ void handler(uint gpio, uint32_t eventmask) {
     }
 }
 
-void initialize_gpios(const char *type, int nr, ...) {
+void initialize_gpios(bool up, bool out, bool input, const char *type, int nr, ...) {
     va_list args;
-
     va_start(args, nr);
+
     for(int i = 0; i < nr; i++) {
         uint arg = va_arg(args, uint);
         gpio_init(arg);
-        // buttons
+        // pull up or down?
+        up ? gpio_pull_up(arg) : gpio_pull_down(arg);
+        // out or in?
+        out ? gpio_set_dir(arg, GPIO_OUT) : gpio_set_dir(arg, GPIO_IN);
+        // input?
+        if (input) gpio_set_input_enabled(arg, true);
+        // buttons get an interrupt
         if (strcmp(type, "BTN") == 0) {
-            gpio_pull_up(arg);
-            gpio_set_dir(arg, 0);
             gpio_set_irq_enabled_with_callback(arg, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &handler);
         }
-        // leds
+        // leds get a pwm function for less future-sight
         else if (strcmp(type, "LED") == 0){
-            gpio_set_dir(arg, 1);
             gpio_set_function(arg, GPIO_FUNC_PWM);
             uint slice_num = pwm_gpio_to_slice_num(arg);
             pwm_config config = pwm_get_config_struct();
             pwm_init(slice_num, &config, true);
         }
         else {
-            //insert insult_user() here
+            printf("You're a dONKEY, an IDIOT SANDWICH");
         }
     }
     va_end(args);

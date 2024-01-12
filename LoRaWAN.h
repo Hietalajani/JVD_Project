@@ -32,5 +32,8 @@
 void lorawan_connection (void);
 void connect_to_server (void);
 void speak_to_server (const char *str);
+void sending_process (int uart_num, const char *str);
+void responding_process (void);
+void check_connection (void);
 
 #endif //JVD_PROJECT_LORAWAN_H
