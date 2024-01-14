@@ -9,12 +9,6 @@ volatile int pos = 0;
 volatile int count = 0; //maybe no volatile
 volatile int i,n = 0;
 
-
-void sending_process (int uart_num, const char *str);
-void responding_process (void);
-void check_connection (void);
-
-
 void lorawan_connection (void) {
     const char test[] = "AT\r\n";
 
@@ -23,7 +17,6 @@ void lorawan_connection (void) {
     sending_process(UART_NR, test);
     check_connection();
 }
-
 
 void check_connection (void) {//maybe bool function for switch
     connection = false;
@@ -56,7 +49,6 @@ void check_connection (void) {//maybe bool function for switch
     while (!connection && count < 5);
     count = 0;
 }
-
 
 void connect_to_server (void) {
     const char Mode[] = " AT+MODE=LWOTAA\r\n";
