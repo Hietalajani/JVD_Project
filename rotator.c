@@ -32,6 +32,8 @@ volatile int current_steps_taken = 0;
 volatile bool pill_drop = false;
 volatile int piezo_error_handle = 0;
 
+extern volatile uint8_t led_on;
+
 void init_rotor() {
 
     // FOR TESTING, DELETE LATER
@@ -369,9 +371,9 @@ void turn_divider(){
     stop_ABCD();
     if(!pill_drop){
         for(int i=0;i<5;i++){
-            toggle_leds(LED_PIN, PWM_FREQUENCY);
-            sleep_ms(50);
-            toggle_leds(LED_PIN, PWM_FREQUENCY);
+            pwm_set_gpio_level(LED_PIN, led_on ? 0 : 500);
+            led_on = !led_on;
+            sleep_ms(500);
         }
         printf("No pill drop.\n");
         printf("Currents steps: %d\n", current_steps_taken);
