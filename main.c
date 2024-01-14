@@ -81,6 +81,8 @@ int main(void) {
             case (5):
                 break;
         }
+
+        // at the end of every loop write information to EEPROM and LoRa
         set_pg_state(&programstate, program_state);
 
         uint8_t data[5] = {
@@ -91,15 +93,15 @@ int main(void) {
                 pills_left
         };
 
+        char msg[256];
+        sprintf(msg, "Program state: %d"
+                     "Rotor running: %d"
+                     "Turns done: %d"
+                     "Pills left: %d", programstate.state, rotor_running, turns_done, pills_left);
+
         write_to_eeprom(PROGRAM_STATE_ADDRESS, data, 5);
+        speak_to_server(msg);
+
     }
-
-    stdio_init_all();
-    init_eeprom();
-    uint8_t dst;
-    write_to_eeprom(ROTOR_RUNNING_ADDRESS, ROTOR_RUNNING, 3);
-    read_from_eeprom(ROTOR_RUNNING_ADDRESS, &dst, 1);
-
-
     return 0;
 }

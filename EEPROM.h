@@ -30,7 +30,7 @@ typedef struct {
 #define ROTOR_STATE
 
 bool init_eeprom();
-uint8_t write_to_eeprom(uint8_t address1, uint8_t address2, uint8_t data, uint8_t len);
+uint8_t write_to_eeprom(uint8_t address1, uint8_t address2, const uint8_t *data, uint8_t len);
 void read_from_eeprom(uint8_t address1, uint8_t address2, uint8_t *buffer, uint8_t len);
 bool validate_mem(pgstate *ps);
 void set_pg_state(pgstate *ps, uint8_t value);

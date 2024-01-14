@@ -10,8 +10,9 @@ bool init_eeprom() {
     return succ;
 }
 
-uint8_t write_to_eeprom(const uint8_t address1, const uint8_t address2, const uint8_t data, uint8_t len) {
-    uint8_t address[3] = {address1, address2, data};
+uint8_t write_to_eeprom(const uint8_t address1, const uint8_t address2, const uint8_t *data, uint8_t len) {
+    uint8_t address[MAX_BYTES] = {address1, address2};
+    for (int i = 0; i < len; i++) address[i+2] = data[i];
     uint8_t ret = i2c_write_blocking(i2c0, EEPROM_ADDR, address, len+2, false);
     sleep_ms(5);
     return ret;
