@@ -7,16 +7,16 @@ volatile bool connection = false;
 volatile int pos = 0;
 volatile int count = 0;
 
-void lorawan_connection (void) {
+bool lorawan_connection (void) {
     const char test[] = "AT\r\n";
 
     uart_setup(UART_NR, UART_TX_PIN, UART_RX_PIN, BAUD_RATE);
 
     sending_process(UART_NR, test);
-    check_connection();
+    return check_connection();
 }
 
-void check_connection (void) {//maybe bool function for switch
+bool check_connection (void) {//maybe bool function for switch
 
     connection = false;
     int str_compare = 0;
@@ -46,6 +46,8 @@ void check_connection (void) {//maybe bool function for switch
     }
     while (!connection && count < 5);
     count = 0;
+
+    return connection;
 }
 
 void connect_to_server (void) {

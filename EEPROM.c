@@ -12,8 +12,8 @@ bool init_eeprom() {
 
 uint8_t write_to_eeprom(const uint8_t address1, const uint8_t address2, const uint8_t data, uint8_t len) {
     uint8_t address[3] = {address1, address2, data};
-    uint8_t ret = i2c_write_blocking(i2c0, EEPROM_ADDR, address, len, false);
-    sleep_ms(20);
+    uint8_t ret = i2c_write_blocking(i2c0, EEPROM_ADDR, address, len+2, false);
+    sleep_ms(5);
     return ret;
 }
 
@@ -21,4 +21,14 @@ void read_from_eeprom(const uint8_t address1, const uint8_t address2, uint8_t *b
     uint8_t address[2] = {address1, address2};
     i2c_write_blocking(i2c0, EEPROM_ADDR, address, 2, true);
     i2c_read_blocking(i2c0, EEPROM_ADDR, buffer, len, false);
+}
+
+void set_pg_state(pgstate *ps, uint8_t value)
+{
+    ps->state = value;
+    ps->not_state = ~value;
+}
+
+bool validate_mem(pgstate *ps) {
+    return ps->state == (uint8_t) ~ps->not_state;
 }

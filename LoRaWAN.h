@@ -30,12 +30,12 @@
 #define BAUD_RATE 9600
 #define RESPONSE_AT "+AT: OK"
 
-void lorawan_connection (void);
+bool lorawan_connection (void);
 void connect_to_server (void);
 void speak_to_server (const char *str);
 void sending_process (int uart_num, const char *str);
 void responding_process (void);
-void check_connection (void);
+bool check_connection (void);
 void message_adaption (char** result, const char* str);
 
 #endif //JVD_PROJECT_LORAWAN_H
