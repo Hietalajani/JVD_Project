@@ -8,6 +8,7 @@
 #include "LED.h"
 #include "time.h"
 #include "pico/stdlib.h"
+#include "hardware/pwm.h"
 // define other stuff
 #define TURN_DIVIDER_TIMER_MS 10000 // 30000 for 30s turns
 #define CALIBRATION_REVOS 1 // 3 for more accurate

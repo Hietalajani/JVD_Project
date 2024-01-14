@@ -3,6 +3,7 @@
 // globals
 volatile uint32_t time = 0;
 volatile bool state = false;
+extern uint8_t program_state;
 
 pwm_config pwm_get_config_struct() {
     const uint32_t f_pwm = PWM_FREQUENCY;
@@ -25,13 +26,16 @@ void handler(uint gpio, uint32_t eventmask) {
 //    printf("TIME: %d\nMASK: %s\n", newtime-time, eventmask);
     if(eventmask == GPIO_IRQ_EDGE_FALL) {
         if ((newtime - time) > DEBOUNCE_TIME && !state) {
-            toggle_leds(LED_PIN, 500);
             state = true;
-        } else {
-            state = false;
+            if (program_state == 0) program_state = 1;
+            else if (program_state == 3) program_state = 4;
         }
-        time = newtime;
     }
+    else {
+        state = false;
+    }
+
+    time = newtime;
 }
 
 void initialize_gpios(bool up, bool out, bool input, const char *type, int nr, ...) {
