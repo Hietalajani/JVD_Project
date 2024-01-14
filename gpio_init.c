@@ -58,9 +58,6 @@ void initialize_gpios(bool up, bool out, bool input, const char *type, int nr, .
             pwm_config config = pwm_get_config_struct();
             pwm_init(slice_num, &config, true);
         }
-        else {
-            printf("You're a dONKEY, an IDIOT SANDWICH");
-        }
     }
     va_end(args);
 }

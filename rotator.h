@@ -4,7 +4,10 @@
 
 #ifndef JVD_PROJECT_ROTATOR_H
 #define JVD_PROJECT_ROTATOR_H
+#include <stdio.h>
+#include "LED.h"
 #include "time.h"
+#include "pico/stdlib.h"
 // define other stuff
 #define TURN_DIVIDER_TIMER_MS 5000 // 30000 for 30s turns
 #define CALIBRATION_REVOS 1 // 3 for more accurate
@@ -19,4 +22,4 @@
 //testing
 #define BUTTON_PIN 12
 
-#endif //JVD_PROJECT_HEADER_H
+#endif //JVD_PROJECT_ROTATOR_H
