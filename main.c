@@ -1,22 +1,22 @@
-#include "header.h"
+#include "main.h"
 
 int main(void) {
-//    stdio_init_all();
-//    // parametrit: gpio-tyyppi (tälä hetkel vaan "BTN" tai "LED", gpio-määrä, gpio:t (eli voi inittaa monta samanlaista kerralla)
+    stdio_init_all();
+    // parametrit: gpio-tyyppi (tälä hetkel vaan "BTN" tai "LED", gpio-määrä, gpio:t (eli voi inittaa monta samanlaista kerralla)
 //    initialize_gpios("BTN", 1, BUTTON_PIN);
 //    initialize_gpios("LED", 1, LED_PIN);
-
-    // rotor initialize + positioning!!
+//
+//     rotor initialize + positioning!!
 //    rotor_startup();
-
+//
 //    printf("Program starts\n");
-
+//
 //    while(true) {
 //        switch(program_state) {
 //            case (0):
 //                if (!gpio_get(BUTTON_PIN)) {
 //                    while (!gpio_get(BUTTON_PIN)) {
-//                        sleep_ms(50);
+//                        sleep_ms(20);
 //                    }
 //                    variable_reset();
 //                    position_calib();
@@ -61,8 +61,16 @@ int main(void) {
 //    }
 //    uint8_t mask = 10;
 //    write_to_eeprom(mask);
-
+//
 //    printf("%d", i2c_get_read_available(i2c0));
+
+
+    stdio_init_all();
+    init_eeprom();
+    uint8_t dst;
+    write_to_eeprom(ROTOR_RUNNING_ADDRESS, ROTOR_RUNNING, 3);
+    read_from_eeprom(ROTOR_RUNNING_ADDRESS, &dst, 1);
+
 
     return 0;
 }

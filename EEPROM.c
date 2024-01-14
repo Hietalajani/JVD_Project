@@ -10,14 +10,15 @@ bool init_eeprom() {
     return succ;
 }
 
-uint8_t write_to_eeprom(const uint8_t *address, const uint8_t *data, uint8_t len) {
-    i2c_write_blocking(i2c0, EEPROM_ADDR, address, 2, true);
-    uint8_t ret = i2c_write_blocking(i2c0, EEPROM_ADDR, data, len, false);
+uint8_t write_to_eeprom(const uint8_t address1, const uint8_t address2, const uint8_t data, uint8_t len) {
+    uint8_t address[3] = {address1, address2, data};
+    uint8_t ret = i2c_write_blocking(i2c0, EEPROM_ADDR, address, len, false);
     sleep_ms(20);
     return ret;
 }
 
-void read_from_eeprom(const uint8_t *address, uint8_t *buffer, const uint8_t len) {
+void read_from_eeprom(const uint8_t address1, const uint8_t address2, uint8_t *buffer, const uint8_t len) {
+    uint8_t address[2] = {address1, address2};
     i2c_write_blocking(i2c0, EEPROM_ADDR, address, 2, true);
     i2c_read_blocking(i2c0, EEPROM_ADDR, buffer, len, false);
 }

@@ -6,13 +6,14 @@
 #define JVD_PROJECT_MAIN_H
 
 //// libs
-//#include <stdbool.h>
-//#include <stdio.h>
-//#include <stdarg.h>
-//#include <string.h>
-//#include "pico/stdlib.h"
-//#include "hardware/pwm.h"
-//#include "hardware/clocks.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+#include "pico/stdlib.h"
+#include "hardware/pwm.h"
+#include "hardware/clocks.h"
+#include "EEPROM.h"
 //
 //// define pins
 //#define LED_PIN 21
