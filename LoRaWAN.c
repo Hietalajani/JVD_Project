@@ -50,32 +50,24 @@ bool check_connection (void) {//maybe bool function for switch
     return connection;
 }
 
-void connect_to_server (void) {
-    const char Mode[] = " AT+MODE=LWOTAA\r\n";
-    const char APPKEY[] = "AT+APPKEY=\"33de3cd72bc755f93ee97f9d343d677c\"\r\n";
-    const char Class[] = "AT+CLASS=A\r\n";
-    const char Port[] = "AT+PORT=8\r\n";
-    const char Join_Request[] = "AT+JOIN\r\n";
+bool connect_to_server (void) {
+    const char server_data[Data_array_length][Default_string_length] = {"AT+MODE=LWOTAA\r\n",
+                                                                        "AT+APPKEY=\"33de3cd72bc755f93ee97f9d343d677c\"\r\n",
+                                                                        "AT+CLASS=A\r\n",
+                                                                        "AT+PORT=8\r\n",
+                                                                        "AT+JOIN\r\n"};
 
-    sending_process(UART_NR, Mode);
-    responding_process();
-    sleep_ms(50);
+    for (int i = 0; i < Data_array_length - 1; ++i) {
+        sending_process(UART_NR, server_data[i]);
+        responding_process();
+        sleep_ms(50);
 
-    sending_process(UART_NR, APPKEY);
-    responding_process();
-    sleep_ms(50);
+        if (!connection) {
+            return false;
+        }
+    }
 
-    sending_process(UART_NR, Class);
-    responding_process();
-    sleep_ms(50);
-
-    sending_process(UART_NR, Port);
-    responding_process();
-    sleep_ms(50);
-
-    sending_process(UART_NR, Join_Request);
-    responding_process();
-    sleep_ms(50);
+    return true;
 }
 
 void speak_to_server (const char* str)  {
@@ -115,8 +107,7 @@ void sending_process (int uart_num, const char *str) {
     uart_send(uart_num, str);
 }
 
-
-void responding_process (void) {//maybe bool function for switch
+void responding_process (void) {
     char str[STRLEN];
     connection = uart_is_readable_within_us(uart1, 500*1000);
     if (connection == true) {
@@ -129,5 +120,6 @@ void responding_process (void) {//maybe bool function for switch
     }
     else{
         printf("Module stopped responding\n");
+        connection = false;
     }
 }

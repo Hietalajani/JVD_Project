@@ -29,9 +29,11 @@
 
 #define BAUD_RATE 9600
 #define RESPONSE_AT "+AT: OK"
+#define Data_array_length 5
+#define Default_string_length 256
 
 bool lorawan_connection (void);
-void connect_to_server (void);
+bool connect_to_server (void);
 void speak_to_server (const char *str);
 void sending_process (int uart_num, const char *str);
 void responding_process (void);
