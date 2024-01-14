@@ -16,19 +16,18 @@ bool lorawan_connection (void) {
     return check_connection();
 }
 
-bool check_connection (void) {//maybe bool function for switch
+bool check_connection (void) {
 
     connection = false;
     int str_compare = 0;
     char str[STRLEN];
-    printf("starting do while\n");
     do {
         connection = uart_is_readable_within_us(uart1, 500*1000);
         sleep_ms(50);
         pos = uart_read(UART_NR, (uint8_t *) str, STRLEN);
         if (pos > 0) {
             str[pos] = '\0';
-            str_compare = strcmp(str, RESPONSE_AT);
+            str_compare = !strcmp(str, RESPONSE_AT);
             sleep_ms(50);
         }
         if(count == 5) {
@@ -50,8 +49,10 @@ bool check_connection (void) {//maybe bool function for switch
     return connection;
 }
 
+
+// remember your appkey!!!!!!
 bool connect_to_server (void) {
-    const char server_data[Data_array_length][Default_string_length] = {"AT+MODE=LWOTAA\r\n",
+    const char server_data[Data_array_length][STRLEN] = {"AT+MODE=LWOTAA\r\n",
                                                                         "AT+APPKEY=\"33de3cd72bc755f93ee97f9d343d677c\"\r\n",
                                                                         "AT+CLASS=A\r\n",
                                                                         "AT+PORT=8\r\n",

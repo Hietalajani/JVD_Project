@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define STRLEN 80
 
 
 // We are using pins 0 and 1, but see the GPIO function select table in the
@@ -30,7 +29,7 @@
 #define BAUD_RATE 9600
 #define RESPONSE_AT "+AT: OK"
 #define Data_array_length 5
-#define Default_string_length 256
+#define STRLEN 256
 
 bool lorawan_connection (void);
 bool connect_to_server (void);
