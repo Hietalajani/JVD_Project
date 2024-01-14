@@ -1,43 +1,46 @@
-#include "header.h"
-#include "rotator.c"
-#include "rotator.h"
+#include "main.h"
 
-// TODO:
-//  MAke button failproof.
-//  Need to remove led on/off from button press.
-//  Piezo sensor takes interrupt from pressin button, idk why. Fix.
-//  Variables to save in E-EPROM: turns_done, program_state, current_steps_taken, rotor_state?(might be useless)
-//  Detect reset.
-//  After reset: set program_state to new case where we reset the current program where it was.
-//  After program catch up: set the program_state to case where the program was running.
-//  LoraWan, where are we? Set up server/mosqq(at school) via Lorawan to sent current status of program.(idk whats the meaning of this.)
-//  set dispenser that it turns exact 30s or the w/e time we set, atm its going with sleep_ms. not gud.
-//
-
-
+extern volatile int turns_done;
 
 int main(void) {
-    // parametrit: gpio-tyyppi (tälä hetkel vaan "BTN" tai "LED", gpio-määrä, gpio:t (eli voi inittaa monta samanlaista kerralla)
-    initialize_gpios("BTN", 1, BUTTON_PIN);
-    initialize_gpios("LED", 1, LED_PIN);
+    uint8_t program_state = 0;
+    uint8_t rotor_running = 0;
+    uint8_t pills_left = 7;
+    pgstate programstate;
 
-    // rotor initialize + positioning!!!
-    rotor_startup();
     stdio_init_all();
+    initialize_gpios(GPIO_PULL_UP, GPIO_IN, 0, "BTN", 1, BUTTON_PIN);
+    initialize_gpios(GPIO_PULL_DOWN, GPIO_OUT, 0, "LED", 1, LED_PIN);
+
+    uint8_t buffer[4];
+    read_from_eeprom(ROTOR_RUNNING_ADDRESS, buffer, 4);
+    if (!lorawan_connection() || !connect_to_server()) exit(-1);
+
+    programstate.state = buffer[0];
+    programstate.not_state = buffer[1];
+
+    if (validate_mem(&programstate)) {
+        rotor_running = buffer[0];
+        program_state = buffer[1];
+        turns_done = buffer[2];
+        pills_left = buffer[3];
+    }
+    else {
+        printf("Previous state not found. Commence operation Tabula Rasa.");
+    }
+
+    // rotor initialize + positioning!!
+    rotor_startup();
 
     printf("Program starts\n");
-    toggle_leds(LED_PIN, PWM_FREQUENCY);
 
     while(true) {
         switch(program_state) {
             case (0):
-                toggle_leds(LED_PIN, PWM_FREQUENCY);
-                sleep_ms(150);
                 if (!gpio_get(BUTTON_PIN)) {
                     while (!gpio_get(BUTTON_PIN)) {
-                        sleep_ms(50);
+                        sleep_ms(20);
                     }
-                    toggle_leds(LED_PIN, 0);
                     variable_reset();
                     position_calib();
                     printf("case 0\n");
@@ -48,7 +51,6 @@ int main(void) {
                 printf("case 1\n");
                 calibration();
                 program_state = 2;
-                toggle_leds(LED_PIN, PWM_FREQUENCY);
                 break;
             case (2):
                 if (!gpio_get(BUTTON_PIN)) {
@@ -56,7 +58,6 @@ int main(void) {
                         sleep_ms(50);
                     }
                     program_state = 3;
-                    toggle_leds(LED_PIN, 0);
                 }
                 break;
             case (3): {
@@ -78,8 +79,29 @@ int main(void) {
                 stop_ABCD();
                 break;
             case (5):
-                // When reset happens we come here.
                 break;
         }
+
+        // at the end of every loop write information to EEPROM and LoRa
+        set_pg_state(&programstate, program_state);
+
+        uint8_t data[5] = {
+                programstate.state,
+                programstate.not_state,
+                rotor_running,
+                turns_done,
+                pills_left
+        };
+
+        char msg[256];
+        sprintf(msg, "Program state: %d"
+                     "Rotor running: %d"
+                     "Turns done: %d"
+                     "Pills left: %d", programstate.state, rotor_running, turns_done, pills_left);
+
+        write_to_eeprom(PROGRAM_STATE_ADDRESS, data, 5);
+        speak_to_server(msg);
+
     }
+    return 0;
 }
