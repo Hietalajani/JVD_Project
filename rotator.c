@@ -271,13 +271,13 @@ void colib_steps_callback() {
     if (calibration_on) {
         end = clock();
         timer = (end - start)/CLOCKS_PER_SEC;
-        printf("%d\n", timer);
+//        printf("%d\n", timer);
         if (opto_state == 1 && timer>5) {
             revolutions++;
-            printf("%d rising edge\n", revolutions);
+//            printf("%d rising edge\n", revolutions);
         }
         if (opto_state == 0) {
-            printf("Starting calibration/ counting steps.\n");
+//            printf("Starting calibration/ counting steps.\n");
             opto_state = 1;
         }
         start = clock();
@@ -287,14 +287,14 @@ void colib_steps_callback() {
 //Rising edge callback for calibration.
 void calibration_callback(){
     if(calibration_on==true){
-        printf("Calibration rising edge callback, Timer: %d\n", timer);
+//        printf("Calibration rising edge callback, Timer: %d\n", timer);
         rising_edge = true;
         gpio_set_irq_enabled_with_callback(OPTO_PIN,GPIO_IRQ_EDGE_FALL, true, &colib_steps_callback);
     }
 }
 
 void piezo_callback(){
-    printf("Piezo callback\n");
+//    printf("Piezo callback\n");
     piezo_error_handle++;
     if (program_state==3) {
         piezo_error_handle++;
@@ -339,7 +339,7 @@ void calibration(){
     steps = steps/revolutions;
     rotor_running = 0;
 
-    printf("Steps: %d\n", steps);
+//    printf("Steps: %d\n", steps);
     stop_ABCD();
     sleep_ms(50);
 
@@ -354,7 +354,7 @@ void calibration(){
     stop_ABCD();
     sleep_ms(50);
 
-    printf("Calibration for hole: %d\n", steps_colib);
+//    printf("Calibration for hole: %d\n", steps_colib);
     steps_colib = steps_colib/2;
     rotor_running = 1;
     for(int i=0;i<=steps_colib;i++){
@@ -383,15 +383,15 @@ void turn_divider(){
             led_on = !led_on;
             sleep_ms(500);
         }
-        printf("No pill drop.\n");
-        printf("Currents steps: %d\n", current_steps_taken);
-        printf("Turns done: %d\n", turns_done);
+//        printf("No pill drop.\n");
+//        printf("Currents steps: %d\n", current_steps_taken);
+//        printf("Turns done: %d\n", turns_done);
         //add here blink led 5 times.
     }
     else {
-        printf("Pill dispensed.\n");
-        printf("Currents steps: %d\n", current_steps_taken);
-        printf("Turns done: %d\n", turns_done);
+//        printf("Pill dispensed.\n");
+//        printf("Currents steps: %d\n", current_steps_taken);
+//        printf("Turns done: %d\n", turns_done);
         pill_drop = false;
     }
     piezo_error_handle = 0;

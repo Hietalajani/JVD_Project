@@ -4,6 +4,7 @@
 volatile uint32_t time = 0;
 volatile bool state = false;
 extern uint8_t program_state;
+extern uint8_t old_program_state;
 
 pwm_config pwm_get_config_struct() {
     const uint32_t f_pwm = PWM_FREQUENCY;
@@ -27,8 +28,14 @@ void handler(uint gpio, uint32_t eventmask) {
     if(eventmask == GPIO_IRQ_EDGE_FALL) {
         if ((newtime - time) > DEBOUNCE_TIME && !state) {
             state = true;
-            if (program_state == 0) program_state = 1;
-            else if (program_state == 3) program_state = 4;
+            if (program_state == 0) {
+                program_state = 1;
+                old_program_state = 0;
+            }
+            if (program_state == 3) {
+                program_state = 4;
+                old_program_state = 3;
+            }
         }
     }
     else {
