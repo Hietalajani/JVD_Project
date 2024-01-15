@@ -17,6 +17,7 @@
 #include "gpio_init.h"
 #include "rotator.h"
 #include "LoRaWAN.h"
+#include "time.h"
 
 // define pins
 #define LED_PIN 21
