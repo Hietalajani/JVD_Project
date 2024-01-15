@@ -35,6 +35,7 @@ volatile int piezo_error_handle = 0;
 
 extern volatile uint8_t led_on;
 volatile uint8_t rotor_running = 0;
+volatile uint8_t reset_correction;
 
 void init_rotor() {
 
@@ -395,6 +396,19 @@ void turn_divider(){
         pill_drop = false;
     }
     piezo_error_handle = 0;
+}
+
+void reset_calib(){
+    reset_correction = (steps/8)*(turns_done-1);
+    for(int i=0;i<=current_steps_taken;i++){
+        turn_clock();
+        current_steps_taken++;
+    }
+    for(int i=0;i<=reset_correction;i++){
+        turn_counterclock();
+        current_steps_taken++;
+    }
+
 }
 
 

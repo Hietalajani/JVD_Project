@@ -86,6 +86,17 @@ int main(void) {
                 break;
             }
             case (5):
+                //kesken calibroinnin
+                position_calib();
+                variable_reset();
+                program_state = 2;
+                break;
+            case (6):
+                //kesken 1/8 turns
+                position_calib();
+                program_state = 4;
+                break;
+
         }
 
         // at the end of every loop write information to EEPROM and LoRa
