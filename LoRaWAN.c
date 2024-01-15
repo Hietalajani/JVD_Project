@@ -116,7 +116,7 @@ void responding_process (void) {
         pos = uart_read(UART_NR, (uint8_t *) str, STRLEN);
         if (pos > 0) {
             str[pos] = '\0';
-            printf("%s\n", str);
+//            printf("%s\n", str);
         }
     }
     else{
