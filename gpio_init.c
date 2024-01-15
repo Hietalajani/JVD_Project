@@ -41,7 +41,6 @@ void handler(uint gpio, uint32_t eventmask) {
     else {
         state = false;
     }
-
     time = newtime;
 }
 

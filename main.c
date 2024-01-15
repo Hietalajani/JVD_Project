@@ -1,9 +1,9 @@
 #include "main.h"
 
-extern volatile int turns_done;
-extern volatile uint8_t steps;
+extern volatile uint8_t turns_done;
+extern volatile uint16_t steps;
 extern volatile uint8_t program_state;
-extern volatile int current_steps_taken;
+extern volatile uint16_t current_steps_taken;
 extern volatile uint8_t rotor_running;
 extern volatile bool calibration_on;
 volatile bool led_on = false;
@@ -21,23 +21,24 @@ int main(void) {
     initialize_gpios(GPIO_PULL_UP, GPIO_IN, 0, "BTN", 1, BUTTON_PIN);
     initialize_gpios(GPIO_PULL_DOWN, GPIO_OUT, 0, "LED", 1, LED_PIN);
 
-    uint8_t buffer[7] = {0, 0, 0, 0, 0, 0, 0};
-//    uint8_t buffer[7];
-//    read_from_eeprom(PROGRAM_STATE_ADDRESS, buffer, 7);
+//    uint8_t buffer[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    uint8_t buffer[9];
+    read_from_eeprom(PROGRAM_STATE_ADDRESS, buffer, 9);
     if (!lorawan_connection() || !connect_to_server()) { exit(-1); }
 
     programstate.state = buffer[0];
     programstate.not_state = buffer[1];
 
-    for (int i = 0; i < 5; i++) printf("EEPROM %d: %d\n", i, buffer[i]);
+    for (int i = 0; i < 9; i++) printf("EEPROM %d: %d\n", i, buffer[i]);
 
     if (validate_mem(&programstate)) {
         rotor_running = buffer[2];
         program_state = buffer[0];
         turns_done = buffer[3];
         pills_left = buffer[4];
-        steps = buffer[5];
-        current_steps_taken = buffer[6];
+        steps = buffer[5] << 8 | buffer[6] >> 8;
+        current_steps_taken = buffer[7] << 8 | buffer[8] >> 8;
+        printf("CURRENT_STEPS_TAKEN: %d\nSTEPS: %d", current_steps_taken, steps);
 
         if (rotor_running) {
             if (program_state == 2) program_state = 5;
@@ -51,7 +52,7 @@ int main(void) {
     // rotor initialize + positioning!!
     rotor_startup();
 
-//    printf("Program starts\n");
+    //    printf("Program starts\n");
 
     while(true) {
         switch(program_state) {
@@ -61,7 +62,7 @@ int main(void) {
                 sleep_ms(500);
                 break;
             case (1):
-                printf("Case 1");
+//                printf("Case 1");
                 pwm_set_gpio_level(LED_PIN, 0);
                 variable_reset();
                 position_calib();
@@ -69,7 +70,7 @@ int main(void) {
                 old_program_state = 1;
                 break;
             case (2):
-                printf("Case 2");
+//                printf("Case 2");
                 calibration();
                 program_state = 3;
                 old_program_state = 2;
@@ -89,9 +90,10 @@ int main(void) {
                 timer_end = clock();
                 timer_dif = (timer_end-timer_start)/CLOCKS_PER_SEC;
                 if(timer_dif>=TURN_DIVIDER_TIMER || timer_start==0) {
-                    if (turns_done < 7) {
+                    turns_done++;
+                    if (turns_done < 8) {
                         timer_start = clock();
-                        turns_done++;
+
                         turn_divider();
                     }
                     else {

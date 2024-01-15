@@ -20,14 +20,14 @@ volatile int opto_state = 0;
 
 // For calibrating count of revolutions and steps of full revolution.
 volatile int revolutions = 0;
-volatile uint8_t steps = 0;
+volatile uint16_t steps = 0;
 // Is calibration going on and shet
 volatile bool calibration_on = false;
 volatile int steps_colib = 0;
 volatile bool rising_edge = false;
 
 // Keeps track on how many steps taken for mid program calibration or shutdown or shet.
-volatile int current_steps_taken = 0;
+volatile uint16_t current_steps_taken = 0;
 
 // Pills dropped?
 volatile bool pill_drop = false;
@@ -35,7 +35,7 @@ volatile int piezo_error_handle = 0;
 
 extern volatile uint8_t led_on;
 volatile uint8_t rotor_running = 0;
-volatile uint8_t reset_correction;
+volatile uint64_t reset_correction;
 
 void init_rotor() {
 
@@ -66,8 +66,6 @@ void init_rotor() {
     gpio_set_input_enabled(PIEZO_PIN, true);
     //needs to be configured or set in main func. Doesnt find callback like this.
     //gpio_set_irq_enabled_with_callback(OPTO_PIN,GPIO_IRQ_EDGE_FALL, true, &colib_steps_callback);
-
-
 }
 
 // functions for coil rotating.
@@ -367,6 +365,12 @@ void calibration(){
     rotor_running = 0;
     moro = 0;
     write_to_eeprom(ROTOR_RUNNING_ADDRESS, &moro, 1);
+    uint8_t crst1;
+    uint8_t crst2;
+    crst1 = steps & 0xFF;
+    crst2 = (steps & 0xFF00) >> 8;
+    uint8_t bits[2] = {crst2, crst1};
+    write_to_eeprom(0, 5, bits, 2);
 
     calibration_on = false;
     stop_ABCD();
@@ -374,17 +378,26 @@ void calibration(){
 }
 
 void turn_divider(){
+    uint8_t crst1;
+    uint8_t crst2;
     //turn 1/8 full steps
     gpio_set_irq_enabled_with_callback(PIEZO_PIN,GPIO_IRQ_EDGE_FALL, true, &piezo_callback);
     rotor_running = 1;
+    printf("Steps before turn: %d\n", steps);
+//    printf("%lu", steps);
     for(int i=0;i<=steps/8;i++){
         turn_counterclock();
-        current_steps_taken++;
+        crst1 = current_steps_taken & 0xFF;
+        crst2 = (current_steps_taken++ & 0xFF00) >> 8;
+        uint8_t bits[2] = {crst2, crst1};
+        write_to_eeprom(0, 7, bits, 2);
     }
+
     rotor_running = 0;
     stop_ABCD();
+
     if(!pill_drop){
-        for(int i=0;i<5;i++){
+        for(int i=0;i<10;i++){
             pwm_set_gpio_level(LED_PIN, led_on ? 0 : 500);
             led_on = !led_on;
             sleep_ms(500);
@@ -404,11 +417,13 @@ void turn_divider(){
 }
 
 void reset_calib() {
-    reset_correction = (steps/8)*(turns_done-1);
+    reset_correction = (steps / 8) * (turns_done + 1);
+    printf("Steps reset: %d", reset_correction);
     for(int i=0;i<=current_steps_taken;i++){
         turn_clock();
     }
-    for(int i=0;i<=reset_correction;i++){
+    current_steps_taken = 0;
+    for(int i=0;i<=reset_correction;i++) {
         turn_counterclock();
         current_steps_taken++;
     }
