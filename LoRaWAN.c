@@ -2,28 +2,35 @@
 #include "LoRaWAN.h"
 #include "uart.h"
 
+//connection to lorawan
 volatile bool connection = false;
 
 volatile int pos = 0;
 volatile int count = 0;
 
+
 bool lorawan_connection (void) {
     const char test[] = "AT\r\n";
 
+    // Determining uart
     uart_setup(UART_NR, UART_TX_PIN, UART_RX_PIN, BAUD_RATE);
 
+    //send test message to uart
     sending_process(UART_NR, test);
+    //responding answer from uart
     return check_connection();
 }
 
 bool check_connection (void) {
-
     connection = false;
     int str_compare = 0;
     char str[STRLEN];
+
     do {
+        // give connection state
         connection = uart_is_readable_within_us(uart1, 500*1000);
         sleep_ms(50);
+        //give single char
         pos = uart_read(UART_NR, (uint8_t *) str, STRLEN);
         if (pos > 0) {
             str[pos] = '\0';
@@ -50,16 +57,17 @@ bool check_connection (void) {
 }
 
 
-// remember your appkey!!!!!!
-bool connect_to_server (void) {
-    const char server_data[Data_array_length][STRLEN] = {"AT+MODE=LWOTAA\r\n",
-                                                                        "AT+APPKEY=\"33de3cd72bc755f93ee97f9d343d677c\"\r\n",
-                                                                        "AT+CLASS=A\r\n",
-                                                                        "AT+PORT=8\r\n",
-                                                                        "AT+JOIN\r\n"};
 
-    for (int i = 0; i < Data_array_length - 1; ++i) {
-        sending_process(UART_NR, server_data[i]);
+bool connect_to_server (void) {
+    //setting up the lorawan for connection to server
+    const char server_connection_data[Data_array_length][STRLEN] = {"AT+MODE=LWOTAA\r\n",
+                                                                    "AT+KEY=APPKEY,\"33DE3CD72BC755F93EE97F9D343D677C\"\r\n", // remember your appkey!!!!!!
+                                                                    "AT+CLASS=A\r\n",
+                                                                    "AT+PORT=8\r\n",
+                                                                    "AT+JOIN\r\n"};
+
+    for (int i = 0; i < Data_array_length; ++i) {
+        sending_process(UART_NR, server_connection_data[i]);
         responding_process();
         sleep_ms(50);
 
@@ -72,37 +80,14 @@ bool connect_to_server (void) {
 }
 
 void speak_to_server (const char* str)  {
-    char* message;
+    char Message[STRLEN];
+    sprintf(Message, "AT+MSG=\"%s\"\r\n", str);
 
-    message_adaption(&message, str);
-    sending_process(UART_NR, message);
-
-    if (message != NULL) {
-        free(message);
-        message = NULL;
-        sleep_ms(50);
-    }
-
+    sending_process(UART_NR, Message);
     responding_process();
     sleep_ms(50);
 }
 
-void message_adaption (char** result, const char* str) {
-    const char Message[] = "AT+MSG=\"message\"\r\n";
-    const char* substr = "message";
-
-    int index = strstr(Message, substr) - Message;
-    int old_size = strlen(substr);
-    int new_size = strlen(Message) - old_size + strlen(str);
-
-    *result = (char*)malloc(new_size + 1);
-
-    strncpy(*result, Message, index);
-    strncpy(*result + index, str, strlen(str));
-    strncpy(*result + index + strlen(str), Message + index + old_size, strlen(Message) - (index + old_size));
-
-    (*result)[new_size] = '\0';
-}
 
 void sending_process (int uart_num, const char *str) {
     uart_send(uart_num, str);
@@ -116,7 +101,7 @@ void responding_process (void) {
         pos = uart_read(UART_NR, (uint8_t *) str, STRLEN);
         if (pos > 0) {
             str[pos] = '\0';
-//            printf("%s\n", str);
+            printf("%s\n", str);
         }
     }
     else{
