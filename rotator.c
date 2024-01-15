@@ -34,7 +34,7 @@ volatile bool pill_drop = false;
 volatile int piezo_error_handle = 0;
 
 extern volatile uint8_t led_on;
-extern volatile uint8_t rotor_running;
+volatile uint8_t rotor_running = 0;
 
 void init_rotor() {
 

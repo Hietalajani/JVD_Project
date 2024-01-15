@@ -11,7 +11,7 @@
 #include "hardware/pwm.h"
 //#include "main.c"
 // define other stuff
-#define TURN_DIVIDER_TIMER 5 // set in seconds you want the rotototototor turn
+#define TURN_DIVIDER_TIMER 15 // set in seconds you want the rotototototor turn
 #define CALIBRATION_REVOS 1 // 3 for more accurate
 // define pins
 #define IN1 2
