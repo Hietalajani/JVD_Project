@@ -3,13 +3,13 @@
 extern volatile int turns_done;
 extern volatile uint8_t program_state;
 extern volatile int current_steps_taken;
+volatile uint8_t rotor_running = 0;
 volatile bool led_on = false;
 volatile uint8_t old_program_state = 0;
 
 int main(void) {
-
-    uint8_t rotor_running = 0;
     uint8_t pills_left = 7;
+    uint timer_start,timer_end,timer_dif = 0;
     pgstate programstate;
 
     stdio_init_all();
@@ -73,6 +73,16 @@ int main(void) {
                     turn_divider();
                     sleep_ms(TURN_DIVIDER_TIMER_MS);
                 } else {
+                timer_end = clock();
+                timer_dif = (timer_end-timer_start)/CLOCKS_PER_SEC;
+                if(timer_dif>=TURN_DIVIDER_TIMER || timer_start==0) {
+                    if (turns_done < 7) {
+                        timer_start = clock();
+                        turns_done++;
+                        turn_divider();
+                    }
+                }
+                else {
                     printf("Full revolution done, all pills dispensed.\n");
                     stop_ABCD();
                     program_state = 0;

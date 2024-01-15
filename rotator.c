@@ -1,15 +1,16 @@
 #include <hardware/gpio.h>
 #include "rotator.h"
+
 // rototopototo functions
 
 // Globals.
 
 // Time variables
-volatile uint start,start2,end,end2,timer;
+volatile uint start,end,timer;
 
 // state of case we are going at in main.
-volatile int program_state = 0;
-// how many slots used from expenser/how many times turned.
+volatile uint8_t program_state = 0;
+// how many slots used from expenser/how many times turned.!
 volatile int turns_done = 0;
 
 // state of which coils are currently in use.
@@ -33,6 +34,7 @@ volatile bool pill_drop = false;
 volatile int piezo_error_handle = 0;
 
 extern volatile uint8_t led_on;
+extern volatile uint8_t rotor_running;
 
 void init_rotor() {
 
@@ -323,6 +325,7 @@ void calibration(){
     // Calibration
     //Calibrating steps for full rotate. (3xfull rotation/3)
     calibration_on = true;
+    rotor_running = 1;
 
     // runs until finds falling edge
     do {
@@ -334,6 +337,7 @@ void calibration(){
         steps++;
     }while(revolutions!=CALIBRATION_REVOS);
     steps = steps/revolutions;
+    rotor_running = 0;
 
 //    printf("Steps: %d\n", steps);
     stop_ABCD();
@@ -341,20 +345,22 @@ void calibration(){
 
     //Correcting the positioning of the holes...
     gpio_set_irq_enabled_with_callback(OPTO_PIN,GPIO_IRQ_EDGE_RISE, true, &calibration_callback);
-
+    rotor_running = 1;
     do {
         turn_clock();
         steps_colib++;
     }while(rising_edge!=true);
-
+    rotor_running = 0;
     stop_ABCD();
     sleep_ms(50);
 
 //    printf("Calibration for hole: %d\n", steps_colib);
     steps_colib = steps_colib/2;
+    rotor_running = 1;
     for(int i=0;i<=steps_colib;i++){
         turn_counterclock();
     }
+    rotor_running = 0;
 
     calibration_on = false;
     stop_ABCD();
@@ -364,10 +370,12 @@ void calibration(){
 void turn_divider(){
     //turn 1/8 full steps
     gpio_set_irq_enabled_with_callback(PIEZO_PIN,GPIO_IRQ_EDGE_FALL, true, &piezo_callback);
+    rotor_running = 1;
     for(int i=0;i<=steps/8;i++){
         turn_counterclock();
         current_steps_taken++;
     }
+    rotor_running = 0;
     stop_ABCD();
     if(!pill_drop){
         for(int i=0;i<5;i++){
