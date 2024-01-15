@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "LED.h"
 #include "time.h"
+#include "EEPROM.h"
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 //#include "main.c"
@@ -46,6 +47,7 @@ void rotor_startup();
 void variable_reset();
 void calibration();
 void turn_divider();
+void reset_calib();
 
 
 #endif //JVD_PROJECT_ROTATOR_H

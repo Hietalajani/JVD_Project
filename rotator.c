@@ -11,7 +11,7 @@ volatile uint start,end,timer;
 // state of case we are going at in main.
 volatile uint8_t program_state = 0;
 // how many slots used from expenser/how many times turned.!
-volatile int turns_done = 0;
+volatile uint8_t turns_done = 0;
 
 // state of which coils are currently in use.
 volatile int rotor_state = 0;
@@ -20,7 +20,7 @@ volatile int opto_state = 0;
 
 // For calibrating count of revolutions and steps of full revolution.
 volatile int revolutions = 0;
-volatile int steps = 0;
+volatile uint8_t steps = 0;
 // Is calibration going on and shet
 volatile bool calibration_on = false;
 volatile int steps_colib = 0;
@@ -327,10 +327,13 @@ void calibration(){
     //Calibrating steps for full rotate. (3xfull rotation/3)
     calibration_on = true;
     rotor_running = 1;
+    uint8_t moro = 1;
+    write_to_eeprom(ROTOR_RUNNING_ADDRESS, &moro, 1);
 
     // runs until finds falling edge
     do {
         turn_clock();
+//        printf("%d", rotor_running);
     }while(opto_state!=1);
     //calculating steps
     do {
@@ -362,6 +365,8 @@ void calibration(){
         turn_counterclock();
     }
     rotor_running = 0;
+    moro = 0;
+    write_to_eeprom(ROTOR_RUNNING_ADDRESS, &moro, 1);
 
     calibration_on = false;
     stop_ABCD();
@@ -398,11 +403,10 @@ void turn_divider(){
     piezo_error_handle = 0;
 }
 
-void reset_calib(){
+void reset_calib() {
     reset_correction = (steps/8)*(turns_done-1);
     for(int i=0;i<=current_steps_taken;i++){
         turn_clock();
-        current_steps_taken++;
     }
     for(int i=0;i<=reset_correction;i++){
         turn_counterclock();
